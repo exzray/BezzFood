@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1017067871781",
+    "firebase_url": "https://bezzfood-5a2b4.firebaseio.com",
+    "project_id": "bezzfood-5a2b4",
+    "storage_bucket": "bezzfood-5a2b4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1017067871781:android:9aa90658cceb1f25",
+        "android_client_info": {
+          "package_name": "com.example.bezzfood"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1017067871781-i6432t3v2ug7g0hks57t6o2t9gslahgd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bezzfood",
+            "certificate_hash": "c561c0ca70a5a714daa5a1a9ef522c0019f07dd8"
+          }
+        },
+        {
+          "client_id": "1017067871781-eught1fakl5rot7a2tbapcne8ve956lq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnp972x7rP1Uf0usdTZH8z4XB8_TTP224"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1017067871781-eught1fakl5rot7a2tbapcne8ve956lq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
