@@ -12,10 +12,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.bezzfood.model.ModelProfile;
 import com.example.bezzfood.utility.Data;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -33,6 +37,11 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        // get extra data
+        md_title = getIntent().getStringExtra(Data.EXTRA_PROFILE_TITLE);
+        md_message = getIntent().getStringExtra(Data.EXTRA_PROFILE_MESSAGE);
+        md_uid = getIntent().getStringExtra(Data.EXTRA_PROFILE_USER);
 
         mv_toolbar = findViewById(R.id.toolbar);
         mv_avatar = findViewById(R.id.image_avatar);
@@ -98,18 +107,24 @@ public class ProfileActivity extends AppCompatActivity {
     private void initUI(){
         setSupportActionBar(mv_toolbar);
 
-        // get extra data
-        md_title = getIntent().getStringExtra(Data.EXTRA_PROFILE_TITLE);
-        md_message = getIntent().getStringExtra(Data.EXTRA_PROFILE_MESSAGE);
-        md_uid = getIntent().getStringExtra(Data.EXTRA_PROFILE_USER);
+        Glide
+                .with(this)
+                .load("https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80")
+                .into(mv_avatar);
 
         updateUI();
     }
 
     private void updateUI(){
-        if (!md_title.isEmpty()) setTitle(md_title);
 
-        if (!md_message.isEmpty()) showMessageDialog(md_message);
+        if (md_title != null && md_message != null){
+            // not created profile
+            setTitle(md_title);
+            showMessageDialog(md_message);
+        } else {
+            // created profile
+            refreshProfile();
+        }
 
         Toast.makeText(this, md_uid, Toast.LENGTH_LONG).show();
     }
@@ -134,6 +149,28 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    private void refreshProfile(){
+        fb_firestore
+                .collection(Data.FIRESTORE_KEY_USERS)
+                .document(md_uid)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful() && task.getResult() != null && task.getResult().exists()){
+                            ModelProfile profile = task.getResult().toObject(ModelProfile.class);
+
+                            assert profile != null;
+
+                            mv_name.setText(profile.getName());
+                            mv_mobile.setText(profile.getMobile());
+                            mv_address.setText(profile.getAddress());
+                            mv_description.setText(profile.getDescription());
+                        }
+                    }
+                });
     }
 
     private void showMessageDialog(String message){

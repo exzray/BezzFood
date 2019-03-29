@@ -98,6 +98,13 @@ public class MainActivity extends AppCompatActivity
 
         switch (item.getItemId()) {
             case R.id.nav_profile:
+                FirebaseUser fb_user = fb_auth.getCurrentUser();
+
+                assert fb_user != null;
+
+                Intent intent = new Intent(this, ProfileActivity.class);
+                intent.putExtra(Data.EXTRA_PROFILE_USER, fb_user.getUid());
+                startActivity(intent);
                 break;
             case R.id.nav_order:
                 break;
@@ -112,7 +119,7 @@ public class MainActivity extends AppCompatActivity
 
     private void initUI() {
         setSupportActionBar(mv_toolbar);
-        
+
         mv_drawer.addDrawerListener(mc_toggle);
         mc_toggle.syncState();
 
