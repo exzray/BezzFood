@@ -103,7 +103,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/teal_button"
+        android:background="@drawable/submit_button"
         android:onClick="onClickProfileSubmit"
         android:text="@string/button_text_submit"
         android:textColor="@color/white" />
