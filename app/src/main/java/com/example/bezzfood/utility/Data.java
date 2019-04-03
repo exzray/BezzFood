@@ -5,6 +5,7 @@ public class Data {
     public static final String FIRESTORE_KEY_USERS = "users";
     public static final String FIRESTORE_KEY_RESTAURANTS = "restaurants";
     public static final String FIRESTORE_KEY_MENUS = "menus";
+    public static final String FIRESTORE_KEY_FOODS = "foods";
 
     public static final String EXTRA_PROFILE_TITLE = "title";
     public static final String EXTRA_PROFILE_MESSAGE = "message";

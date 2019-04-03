@@ -16,4 +16,9 @@
     <string name="field_hint_confirm">Retype password</string>
     <string name="text_basic_information">Basic Information</string>
     <string name="text_address_information">Address Information</string>
+    <string name="text_buy">buy</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="text_no_menu">No menu yet! Please come back later.</string>
 </resources>
