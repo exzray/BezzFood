@@ -118,7 +118,6 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
@@ -135,6 +134,12 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_order:
                 break;
             case R.id.nav_logout:
+                fb_auth.signOut();
+
+                Intent intent3 = new Intent(this, SigninActivity.class);
+                startActivity(intent3);
+                finish();
+
                 break;
         }
 
@@ -154,7 +159,7 @@ public class MainActivity extends AppCompatActivity
         NearbyRestaurantAdapter.OnItemClickListener onItemClickListener = new NearbyRestaurantAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(ModelRestaurant restaurant) {
-                Intent intent = new Intent(MainActivity.this, MenuListActivity.class);
+                Intent intent = new Intent(MainActivity.this, RestaurantDetailActivity.class);
 
                 // pass data
                 intent.putExtra(Data.EXTRA_STRING_UID, restaurant.getUid());

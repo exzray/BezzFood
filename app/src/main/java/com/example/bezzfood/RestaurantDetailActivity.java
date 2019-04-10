@@ -10,7 +10,7 @@ import android.widget.TextView;
 import com.example.bezzfood.adapter.MenuTabAdapter;
 import com.example.bezzfood.utility.Data;
 
-public class MenuListActivity extends AppCompatActivity {
+public class RestaurantDetailActivity extends AppCompatActivity {
 
     private String md_uid;
     private String md_name;
@@ -26,7 +26,7 @@ public class MenuListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_menu_list);
+        setContentView(R.layout.activity_restaurant_detail);
 
         md_uid = getIntent().getStringExtra(Data.EXTRA_STRING_UID);
         md_name = getIntent().getStringExtra(Data.EXTRA_STRING_NAME);

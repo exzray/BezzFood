@@ -3,6 +3,9 @@ package com.example.bezzfood.utility;
 public class Data {
 
     public static final String FIRESTORE_KEY_USERS = "users";
+    public static final String FIRESTORE_KEY_ORDERS = "orders";
+    public static final String FIRESTORE_KEY_PENDING = "pending";
+    public static final String FIRESTORE_KEY_COMPLETED = "completed";
     public static final String FIRESTORE_KEY_RESTAURANTS = "restaurants";
     public static final String FIRESTORE_KEY_MENUS = "menus";
     public static final String FIRESTORE_KEY_FOODS = "foods";

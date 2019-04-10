@@ -1,20 +1,61 @@
 package com.example.bezzfood.model;
 
+import com.google.firebase.firestore.Exclude;
+
 public class ModelFood {
 
-    private String uid = "";
+    // metadata start
+    private String restaurantUID = "";
+    private String menuUID = "";
+    private String foodUID = "";
+    private String path = "";
+    // metadata end
+
     private String name = "";
     private String image = "";
     private String description = "";
 
     private Double price = 0.0;
 
-    public String getUid() {
-        return uid;
+
+    @Exclude
+    public String getRestaurantUID() {
+        return restaurantUID;
     }
 
-    public void setUid(String uid) {
-        this.uid = uid;
+    @Exclude
+    public void setRestaurantUID(String restaurantUID) {
+        this.restaurantUID = restaurantUID;
+    }
+
+    @Exclude
+    public String getMenuUID() {
+        return menuUID;
+    }
+
+    @Exclude
+    public void setMenuUID(String menuUID) {
+        this.menuUID = menuUID;
+    }
+
+    @Exclude
+    public String getFoodUID() {
+        return foodUID;
+    }
+
+    @Exclude
+    public void setFoodUID(String foodUID) {
+        this.foodUID = foodUID;
+    }
+
+    @Exclude
+    public String getPath() {
+        return path;
+    }
+
+    @Exclude
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getName() {

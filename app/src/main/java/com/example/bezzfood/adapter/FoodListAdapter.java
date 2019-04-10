@@ -8,11 +8,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.bezzfood.R;
 import com.example.bezzfood.model.ModelFood;
 import com.example.bezzfood.utility.Data;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,20 +26,22 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
-    private List<ModelFood> mc_foods;
+    private Map<String, ModelFood> mc_food;
     private ListenerRegistration mc_registration;
 
+    private FirebaseAuth fb_auth = FirebaseAuth.getInstance();
     private FirebaseFirestore fb_firestore = FirebaseFirestore.getInstance();
 
 
     public FoodListAdapter() {
-        mc_foods = new ArrayList<>();
+        mc_food = new HashMap<>();
     }
 
     @NonNull
@@ -48,19 +54,20 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
     @Override
     public void onBindViewHolder(@NonNull VH vh, int i) {
-        final ModelFood food = mc_foods.get(i);
+        final ModelFood food = (new ArrayList<>(mc_food.values())).get(i);
 
         vh.setImage(food.getImage());
         vh.setName(food.getName());
         vh.setPrice(food.getPrice());
+        vh.setBuy(food);
     }
 
     @Override
     public int getItemCount() {
-        return mc_foods.size();
+        return mc_food.size();
     }
 
-    public void setMenu(String restaurantUID, String menuUID) {
+    public void setMenu(final String restaurantUID, final String menuUID) {
         mc_registration = fb_firestore
                 .collection(Data.FIRESTORE_KEY_RESTAURANTS)
                 .document(restaurantUID)
@@ -71,14 +78,20 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                         if (queryDocumentSnapshots != null) {
-                            mc_foods.clear();
+                            mc_food.clear();
 
                             for (DocumentSnapshot snapshot : queryDocumentSnapshots) {
                                 ModelFood food = snapshot.toObject(ModelFood.class);
 
                                 if (food != null) {
-                                    food.setUid(snapshot.getId());
-                                    mc_foods.add(food);
+
+                                    // save metadata
+                                    food.setRestaurantUID(restaurantUID);
+                                    food.setMenuUID(menuUID);
+                                    food.setFoodUID(snapshot.getId());
+                                    food.setPath(snapshot.getReference().getPath());
+
+                                    mc_food.put(snapshot.getId(), food);
                                 }
                             }
 
@@ -122,6 +135,27 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
         private void setPrice(Double price) {
             this.price.setText(NumberFormat.getCurrencyInstance().format(price));
+        }
+
+        private void setBuy(final ModelFood food) {
+            buy.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    FirebaseUser user = fb_auth.getCurrentUser();
+
+                    if (user != null) {
+
+                        Toast.makeText(itemView.getContext(), food.getName(), Toast.LENGTH_SHORT).show();
+
+                        final DocumentReference pending = fb_firestore
+                                .collection(Data.FIRESTORE_KEY_USERS)
+                                .document(user.getUid())
+                                .collection(Data.FIRESTORE_KEY_ORDERS)
+                                .document(food.getRestaurantUID());
+                    }
+                }
+            });
         }
     }
 }
