@@ -2,6 +2,7 @@ package com.example.bezzfood.adapter;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.example.bezzfood.R;
 import com.example.bezzfood.model.ModelFood;
 import com.example.bezzfood.utility.Data;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -23,6 +25,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.Transaction;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -59,7 +63,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
         vh.setImage(food.getImage());
         vh.setName(food.getName());
         vh.setPrice(food.getPrice());
-        vh.setBuy(food);
+        vh.setButton(food);
     }
 
     @Override
@@ -110,7 +114,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
         private ImageView image;
         private TextView name, price;
-        private Button buy;
+        private Button buy, remove;
 
 
         private VH(@NonNull View itemView) {
@@ -120,6 +124,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
             name = itemView.findViewById(R.id.label_name);
             price = itemView.findViewById(R.id.label_price);
             buy = itemView.findViewById(R.id.button_buy);
+            remove = itemView.findViewById(R.id.button_remove);
         }
 
         private void setImage(String url) {
@@ -137,25 +142,89 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
             this.price.setText(NumberFormat.getCurrencyInstance().format(price));
         }
 
-        private void setBuy(final ModelFood food) {
-            buy.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        private void setButton(final ModelFood food) {
 
-                    FirebaseUser user = fb_auth.getCurrentUser();
+            FirebaseUser user = fb_auth.getCurrentUser();
 
-                    if (user != null) {
+            if (user != null){
+                final DocumentReference pending = fb_firestore
+                        .collection(Data.FIRESTORE_KEY_USERS)
+                        .document(user.getUid())
+                        .collection(Data.FIRESTORE_KEY_PENDING)
+                        .document(food.getRestaurantUID());
 
-                        Toast.makeText(itemView.getContext(), food.getName(), Toast.LENGTH_SHORT).show();
+                buy.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
 
-                        final DocumentReference pending = fb_firestore
-                                .collection(Data.FIRESTORE_KEY_USERS)
-                                .document(user.getUid())
-                                .collection(Data.FIRESTORE_KEY_ORDERS)
-                                .document(food.getRestaurantUID());
+
+                        fb_firestore.runTransaction(new Transaction.Function<Void>() {
+                            @android.support.annotation.Nullable
+                            @Override
+                            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+
+                                DocumentSnapshot snapshot = transaction.get(pending);
+                                Map<String, Object> data = new HashMap<>();
+
+                                if (!snapshot.exists()){
+                                    data.put(food.getFoodUID(), 1);
+                                } else {
+                                    long quantity = (long) snapshot.get(food.getFoodUID());
+                                    quantity++;
+
+                                    data.put(food.getFoodUID(), quantity);
+                                }
+
+                                transaction.set(pending, data, SetOptions.merge());
+
+                                return null;
+                            }
+                        })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                     }
-                }
-            });
+                });
+
+                remove.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        fb_firestore.runTransaction(new Transaction.Function<Void>() {
+                            @android.support.annotation.Nullable
+                            @Override
+                            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+
+                                DocumentSnapshot snapshot = transaction.get(pending);
+                                Map<String, Object> data = new HashMap<>();
+
+                                if (!snapshot.exists()){
+                                    data.put(food.getFoodUID(), 1);
+                                } else {
+                                    long quantity = (long) snapshot.get(food.getFoodUID());
+                                    quantity--;
+
+                                    if (!(quantity <= 0)) data.put(food.getFoodUID(), quantity);
+                                }
+
+
+                                transaction.set(pending, data, SetOptions.merge());
+
+                                return null;
+                            }
+                        })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                });
+            }
         }
     }
 }

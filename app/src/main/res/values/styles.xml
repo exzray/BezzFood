@@ -20,5 +20,4 @@
     <style name="AppTheme.SmallRating" parent="Widget.AppCompat.RatingBar.Small">
         <item name="android:colorControlActivated">@color/amber_700</item>
     </style>
-
 </resources>
