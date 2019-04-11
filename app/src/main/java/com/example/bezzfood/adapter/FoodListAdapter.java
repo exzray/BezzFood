@@ -16,6 +16,7 @@ import com.example.bezzfood.R;
 import com.example.bezzfood.model.ModelFood;
 import com.example.bezzfood.utility.Data;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -34,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+
+import jp.shts.android.library.TriangleLabelView;
 
 public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
@@ -115,6 +118,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
         private ImageView image;
         private TextView name, price;
         private Button buy, remove;
+        private TriangleLabelView quantity;
 
 
         private VH(@NonNull View itemView) {
@@ -125,6 +129,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
             price = itemView.findViewById(R.id.label_price);
             buy = itemView.findViewById(R.id.button_buy);
             remove = itemView.findViewById(R.id.button_remove);
+            quantity = itemView.findViewById(R.id.label_quantity);
         }
 
         private void setImage(String url) {
@@ -146,7 +151,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
             FirebaseUser user = fb_auth.getCurrentUser();
 
-            if (user != null){
+            if (user != null) {
                 final DocumentReference pending = fb_firestore
                         .collection(Data.FIRESTORE_KEY_USERS)
                         .document(user.getUid())
@@ -157,19 +162,19 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                     @Override
                     public void onClick(final View v) {
 
-
-                        fb_firestore.runTransaction(new Transaction.Function<Void>() {
-                            @android.support.annotation.Nullable
+                        fb_firestore.runTransaction(new Transaction.Function<Integer>() {
                             @Override
-                            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                            public Integer apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
 
                                 DocumentSnapshot snapshot = transaction.get(pending);
                                 Map<String, Object> data = new HashMap<>();
+                                long quantity;
 
-                                if (!snapshot.exists()){
+                                if (!snapshot.exists()) {
                                     data.put(food.getFoodUID(), 1);
+                                    quantity = 1;
                                 } else {
-                                    long quantity = (long) snapshot.get(food.getFoodUID());
+                                    quantity = (long) snapshot.get(food.getFoodUID());
                                     quantity++;
 
                                     data.put(food.getFoodUID(), quantity);
@@ -177,9 +182,15 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
                                 transaction.set(pending, data, SetOptions.merge());
 
-                                return null;
+                                return (int) quantity;
                             }
                         })
+                                .addOnSuccessListener(new OnSuccessListener<Integer>() {
+                                    @Override
+                                    public void onSuccess(Integer integer) {
+                                        quantity.setSecondaryText(String.valueOf(integer));
+                                    }
+                                })
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
@@ -193,29 +204,35 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                     @Override
                     public void onClick(View v) {
 
-                        fb_firestore.runTransaction(new Transaction.Function<Void>() {
-                            @android.support.annotation.Nullable
+                        fb_firestore.runTransaction(new Transaction.Function<Integer>() {
                             @Override
-                            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                            public Integer apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
 
                                 DocumentSnapshot snapshot = transaction.get(pending);
                                 Map<String, Object> data = new HashMap<>();
+                                long quantity;
 
-                                if (!snapshot.exists()){
+                                if (!snapshot.exists()) {
                                     data.put(food.getFoodUID(), 1);
+                                    quantity = 1;
                                 } else {
-                                    long quantity = (long) snapshot.get(food.getFoodUID());
+                                    quantity = (long) snapshot.get(food.getFoodUID());
                                     quantity--;
 
                                     if (!(quantity <= 0)) data.put(food.getFoodUID(), quantity);
                                 }
 
-
                                 transaction.set(pending, data, SetOptions.merge());
 
-                                return null;
+                                return (int) quantity;
                             }
                         })
+                                .addOnSuccessListener(new OnSuccessListener<Integer>() {
+                                    @Override
+                                    public void onSuccess(Integer integer) {
+                                        quantity.setSecondaryText(String.valueOf(integer));
+                                    }
+                                })
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
@@ -225,6 +242,10 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                     }
                 });
             }
+        }
+
+        private void setQuantity(int quantity){
+
         }
     }
 }

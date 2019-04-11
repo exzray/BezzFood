@@ -16,6 +16,7 @@ public class ModelFood {
     private String description = "";
 
     private Double price = 0.0;
+    private Integer quantity = 0;
 
 
     @Exclude
