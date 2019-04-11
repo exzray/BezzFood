@@ -6,7 +6,6 @@ public class ModelFood {
 
     // metadata start
     private String restaurantUID = "";
-    private String menuUID = "";
     private String foodUID = "";
     private String path = "";
     // metadata end
@@ -27,16 +26,6 @@ public class ModelFood {
     @Exclude
     public void setRestaurantUID(String restaurantUID) {
         this.restaurantUID = restaurantUID;
-    }
-
-    @Exclude
-    public String getMenuUID() {
-        return menuUID;
-    }
-
-    @Exclude
-    public void setMenuUID(String menuUID) {
-        this.menuUID = menuUID;
     }
 
     @Exclude
@@ -89,5 +78,13 @@ public class ModelFood {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 }
