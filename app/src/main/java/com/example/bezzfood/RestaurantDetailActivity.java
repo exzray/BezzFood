@@ -5,7 +5,10 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.bezzfood.adapter.MenuTabAdapter;
 import com.example.bezzfood.utility.Data;
@@ -46,6 +49,25 @@ public class RestaurantDetailActivity extends AppCompatActivity {
         super.onDestroy();
 
         if (mc_adapter != null) mc_adapter.removeRestaurant();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        getMenuInflater().inflate(R.menu.restaurant_detail, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case R.id.action_cart:
+                Toast.makeText(this, "Cart", Toast.LENGTH_SHORT).show();
+        }
+
+        return true;
     }
 
     private void initUI() {
