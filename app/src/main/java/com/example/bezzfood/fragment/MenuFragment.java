@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,6 @@ import android.view.ViewGroup;
 
 import com.example.bezzfood.R;
 import com.example.bezzfood.adapter.FoodListAdapter;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -28,10 +26,8 @@ public class MenuFragment extends Fragment {
 
     private RecyclerView mv_recycler;
 
-    private FirebaseFirestore fb_firestore = FirebaseFirestore.getInstance();
 
-
-    public static MenuFragment newInstance(String title, String restaurantUID, String md_menuUID){
+    public static MenuFragment newInstance(String title, String restaurantUID, String md_menuUID) {
         MenuFragment fragment = new MenuFragment();
         fragment.md_title = title;
         fragment.md_restaurantUID = restaurantUID;
@@ -78,7 +74,7 @@ public class MenuFragment extends Fragment {
         return md_title;
     }
 
-    private void initUI(){
+    private void initUI() {
         mv_recycler.setLayoutManager(mc_manager);
         mv_recycler.setAdapter(mc_adapter);
 
