@@ -1,5 +1,6 @@
 package com.example.bezzfood;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -8,7 +9,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.bezzfood.adapter.MenuTabAdapter;
 import com.example.bezzfood.utility.Data;
@@ -62,9 +62,12 @@ public class RestaurantDetailActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.action_cart:
-                Toast.makeText(this, "Cart", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, OrderDetailActivity.class);
+                intent.putExtra(Data.FIRESTORE_KEY_RESTAURANTS, md_uid);
+
+                startActivity(intent);
         }
 
         return true;
