@@ -2,20 +2,17 @@ package com.example.bezzfood.adapter;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.bezzfood.R;
 import com.example.bezzfood.model.ModelFood;
 import com.example.bezzfood.utility.Data;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,7 +24,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.Transaction;
 
 import java.text.NumberFormat;
@@ -42,7 +38,6 @@ import jp.shts.android.library.TriangleLabelView;
 public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
     private Map<String, ModelFood> mc_food;
-    private FirebaseUser mc_user;
     private ListenerRegistration mc_foodRegistration;
 
     private FirebaseAuth fb_auth = FirebaseAuth.getInstance();
@@ -51,7 +46,6 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
 
     public FoodListAdapter() {
         mc_food = new HashMap<>();
-        mc_user = fb_auth.getCurrentUser();
     }
 
     @NonNull
@@ -79,7 +73,8 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
     }
 
     public void setMenu(final String restaurantUID, final String menuUID) {
-        assert mc_user != null;
+        FirebaseUser user = fb_auth.getCurrentUser();
+        assert user != null;
 
         CollectionReference foodRef = fb_firestore
                 .collection(Data.FIRESTORE_KEY_RESTAURANTS)
@@ -87,12 +82,6 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                 .collection(Data.FIRESTORE_KEY_MENUS)
                 .document(menuUID)
                 .collection(Data.FIRESTORE_KEY_FOODS);
-
-        final DocumentReference cartRef = fb_firestore
-                .collection(Data.FIRESTORE_KEY_USERS)
-                .document(mc_user.getUid())
-                .collection(Data.FIRESTORE_KEY_PENDING)
-                .document(restaurantUID);
 
         mc_foodRegistration = foodRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -114,40 +103,44 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                         }
                     }
 
-                    cartRef
-                            .get()
-                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                @Override
-                                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                    if (documentSnapshot.exists()){
-                                        Map<String, Object> data = documentSnapshot.getData();
-
-                                        if (data != null){
-                                            for (String key : data.keySet()){
-                                                Long total = (Long) data.get(key);
-                                                ModelFood food = mc_food.get(key);
-
-                                                assert total != null;
-
-                                                if (food != null) {
-                                                    food.setQuantity(total.intValue());
-                                                }
-
-                                                notifyDataSetChanged();
-                                            }
-                                        }
-                                    }
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.i("mymsg", "onFailure: " + e.getMessage());
-                                }
-                            });
+                    update(restaurantUID);
                 }
             }
         });
+    }
+
+    private void update(String restaurantUID){
+        final FirebaseUser user = fb_auth.getCurrentUser();
+        assert user != null;
+
+        final CollectionReference cart = fb_firestore
+                .collection(Data.FIRESTORE_KEY_USERS)
+                .document(user.getUid())
+                .collection(Data.FIRESTORE_KEY_PENDING)
+                .document(restaurantUID)
+                .collection(Data.FIRESTORE_KEY_FOODS);
+
+        cart
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        if (queryDocumentSnapshots != null){
+                            for (DocumentSnapshot snapshot : queryDocumentSnapshots.getDocuments()){
+                                ModelFood food = mc_food.get(snapshot.getId());
+
+                                if (food != null){
+                                    Long value = snapshot.getLong("value");
+                                    assert value != null;
+
+                                    food.setQuantity(value.intValue());
+                                }
+                            }
+                        }
+
+                        notifyDataSetChanged();
+                    }
+                });
     }
 
     public void removeMenu() {
@@ -190,94 +183,75 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
         }
 
         private void setButton(final ModelFood food) {
+            final FirebaseUser user = fb_auth.getCurrentUser();
+            assert user != null;
 
-            if (mc_user != null) {
-                final DocumentReference pending = fb_firestore
-                        .collection(Data.FIRESTORE_KEY_USERS)
-                        .document(mc_user.getUid())
-                        .collection(Data.FIRESTORE_KEY_PENDING)
-                        .document(food.getRestaurantUID());
+            View.OnClickListener onClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
 
-                buy.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(final View v) {
+                    final DocumentReference pending = fb_firestore
+                            .collection(Data.FIRESTORE_KEY_USERS)
+                            .document(user.getUid())
+                            .collection(Data.FIRESTORE_KEY_PENDING)
+                            .document(food.getRestaurantUID())
+                            .collection(Data.FIRESTORE_KEY_FOODS)
+                            .document(food.getFoodUID());
 
-                        fb_firestore.runTransaction(new Transaction.Function<Integer>() {
-                            @Override
-                            public Integer apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                    fb_firestore.runTransaction(new Transaction.Function<Integer>() {
+                        @Override
+                        public Integer apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
 
-                                DocumentSnapshot snapshot = transaction.get(pending);
-                                Map<String, Object> data = new HashMap<>();
-                                Long total = snapshot.getLong(food.getFoodUID());
+                            Map<String, Object> data;
+                            Integer value = 0;
 
-                                if (total == null) {
-                                    total = 0L;
-                                }
+                            // retrieve the document first
+                            DocumentSnapshot snapshot = transaction.get(pending);
 
-                                total += 1L;
-                                data.put(food.getFoodUID(), total);
+                            // this is needed, to sure data is exist
+                            if (snapshot.exists()) data = snapshot.getData();
+                            else data = new HashMap<>();
 
-                                transaction.set(pending, data, SetOptions.merge());
+                            assert data != null;
 
-                                return total.intValue();
+                            // update to existed value
+                            if (data.containsKey("value")) {
+                                Long lValue = (Long) data.get("value");
+
+                                if (lValue != null) value = lValue.intValue();
                             }
-                        })
-                                .addOnSuccessListener(new OnSuccessListener<Integer>() {
-                                    @Override
-                                    public void onSuccess(Integer integer) {
-                                        setQuantity(integer);
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    }
-                });
 
-                remove.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+                            // increase or decrease based on button clicked
+                            if (v.equals(buy)) value++;
+                            else value--;
 
-                        fb_firestore.runTransaction(new Transaction.Function<Integer>() {
-                            @Override
-                            public Integer apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                            // update new data
+                            data.put("value", value);
 
-                                DocumentSnapshot snapshot = transaction.get(pending);
-                                Map<String, Object> data = new HashMap<>();
-                                Long total = snapshot.getLong(food.getFoodUID());
+                            // remove the field
+                            if (value <= 0) {
 
-                                if (total == null) {
-                                    total = 0L;
-                                }
+                                transaction.delete(pending);
 
-                                if (!(total <= 0)) {
-                                    total -= 1L;
-                                    data.put(food.getFoodUID(), total);
-                                }
-
-                                transaction.set(pending, data, SetOptions.merge());
-
-                                return total.intValue();
+                            } else {
+                                //write new data
+                                transaction.set(pending, data);
                             }
-                        })
-                                .addOnSuccessListener(new OnSuccessListener<Integer>() {
-                                    @Override
-                                    public void onSuccess(Integer integer) {
-                                        setQuantity(integer);
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(itemView.getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    }
-                });
-            }
+
+                            return value;
+                        }
+                    })
+                            .addOnSuccessListener(new OnSuccessListener<Integer>() {
+                                @Override
+                                public void onSuccess(Integer integer) {
+                                    setQuantity(integer);
+                                }
+                            });
+                }
+            };
+
+            buy.setOnClickListener(onClickListener);
+            remove.setOnClickListener(onClickListener);
         }
 
         private void setQuantity(int total) {
