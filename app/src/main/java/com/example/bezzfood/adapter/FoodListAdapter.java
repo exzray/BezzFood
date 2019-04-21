@@ -116,9 +116,9 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
         final CollectionReference cart = fb_firestore
                 .collection(Data.FIRESTORE_KEY_USERS)
                 .document(user.getUid())
-                .collection(Data.FIRESTORE_KEY_PENDING)
+                .collection(Data.FIRESTORE_KEY_ORDERS)
                 .document(restaurantUID)
-                .collection(Data.FIRESTORE_KEY_FOODS);
+                .collection(Data.FIRESTORE_KEY_CARTS);
 
         cart
                 .get()
@@ -130,7 +130,7 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                                 ModelFood food = mc_food.get(snapshot.getId());
 
                                 if (food != null){
-                                    Long value = snapshot.getLong("value");
+                                    Long value = snapshot.getLong("quantity");
                                     assert value != null;
 
                                     food.setQuantity(value.intValue());
@@ -193,9 +193,9 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                     final DocumentReference pending = fb_firestore
                             .collection(Data.FIRESTORE_KEY_USERS)
                             .document(user.getUid())
-                            .collection(Data.FIRESTORE_KEY_PENDING)
+                            .collection(Data.FIRESTORE_KEY_ORDERS)
                             .document(food.getRestaurantUID())
-                            .collection(Data.FIRESTORE_KEY_FOODS)
+                            .collection(Data.FIRESTORE_KEY_CARTS)
                             .document(food.getFoodUID());
 
                     fb_firestore.runTransaction(new Transaction.Function<Integer>() {
@@ -215,8 +215,8 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                             assert data != null;
 
                             // update to existed value
-                            if (data.containsKey("value")) {
-                                Long lValue = (Long) data.get("value");
+                            if (data.containsKey("quantity")) {
+                                Long lValue = (Long) data.get("quantity");
 
                                 if (lValue != null) value = lValue.intValue();
                             }
@@ -226,7 +226,9 @@ public class FoodListAdapter extends RecyclerView.Adapter<FoodListAdapter.VH> {
                             else value--;
 
                             // update new data
-                            data.put("value", value);
+                            data.put("name", food.getName());
+                            data.put("price", food.getPrice());
+                            data.put("quantity", value);
 
                             // remove the field
                             if (value <= 0) {
