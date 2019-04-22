@@ -51,7 +51,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
 
         mc_manager = new LinearLayoutManager(this);
         mc_divider = new DividerItemDecoration(this, mc_manager.getOrientation());
-        mc_adapter = new CartListAdapter();
+        mc_adapter = new CartListAdapter(cart);
 
         mv_recycler = findViewById(R.id.recycler);
         mv_finalize = findViewById(R.id.finalize);
@@ -115,6 +115,8 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                             if (queryDocumentSnapshots != null) {
 
+                                cart.clear();
+
                                 for (DocumentSnapshot snapshot : queryDocumentSnapshots) {
                                     Map data = snapshot.getData();
 
@@ -124,6 +126,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
                                 }
 
                                 Toast.makeText(OrderDetailActivity.this, "Total item : " + queryDocumentSnapshots.size(), Toast.LENGTH_SHORT).show();
+                                mc_adapter.notifyDataSetChanged();
                             }
                         }
                     });
