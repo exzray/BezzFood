@@ -2,18 +2,23 @@ package com.example.bezzfood;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.widget.Toast;
 
 import com.example.bezzfood.adapter.CartListAdapter;
 import com.example.bezzfood.model.ModelItem;
 import com.example.bezzfood.utility.Data;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -160,10 +165,41 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
             md_total += (quantity * price);
         }
 
+        drawTotal();
+    }
+
+    private void drawTotal(){
         mv_finalize.setText("Finalize( "+ NumberFormat.getCurrencyInstance().format(md_total) +" )");
     }
 
     private void finalizeCart() {
+        FirebaseUser user = fb_auth.getCurrentUser();
 
+        if (user != null){
+            String user_uid = user.getUid();
+            String restaurant_uid = md_uid;
+
+            Map<String, String> data = new HashMap<>();
+            data.put("user", user_uid);
+            data.put("restaurant", restaurant_uid);
+
+            fb_firestore
+                    .collection(Data.FIRESTORE_KEY_ORDERS)
+                    .add(data)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Toast.makeText(OrderDetailActivity.this, "Please wait, while we prepare your order!", Toast.LENGTH_SHORT).show();
+                            onBackPressed();
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(OrderDetailActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
     }
 }
