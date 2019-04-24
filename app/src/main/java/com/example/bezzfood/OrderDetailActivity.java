@@ -7,31 +7,39 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.Toast;
 
 import com.example.bezzfood.adapter.CartListAdapter;
+import com.example.bezzfood.model.ModelItem;
 import com.example.bezzfood.utility.Data;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.NumberFormat;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import in.shadowfax.proswipebutton.ProSwipeButton;
 
 public class OrderDetailActivity extends AppCompatActivity implements ProSwipeButton.OnSwipeListener {
 
     private String md_uid;
-    private Map<String, Map> cart;
+    private Double md_total;
+    private Map<String, ModelItem> cart;
 
     private LinearLayoutManager mc_manager;
     private DividerItemDecoration mc_divider;
     private CartListAdapter mc_adapter;
+    private ListenerRegistration mc_listener;
 
     private RecyclerView mv_recycler;
     private ProSwipeButton mv_finalize;
@@ -51,7 +59,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
 
         mc_manager = new LinearLayoutManager(this);
         mc_divider = new DividerItemDecoration(this, mc_manager.getOrientation());
-        mc_adapter = new CartListAdapter(cart);
+        mc_adapter = new CartListAdapter(cart, md_uid);
 
         mv_recycler = findViewById(R.id.recycler);
         mv_finalize = findViewById(R.id.finalize);
@@ -61,6 +69,13 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
         if (md_uid != null && !md_uid.isEmpty()) {
             loadCart();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (mc_listener != null) mc_listener.remove();
     }
 
     @Override
@@ -108,29 +123,44 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
                     .document(md_uid)
                     .collection(Data.FIRESTORE_KEY_CARTS);
 
-            collectionReference
-                    .get()
-                    .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            mc_listener = collectionReference
+                    .addSnapshotListener(new EventListener<QuerySnapshot>() {
                         @Override
-                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                        public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                             if (queryDocumentSnapshots != null) {
 
                                 cart.clear();
 
                                 for (DocumentSnapshot snapshot : queryDocumentSnapshots) {
-                                    Map data = snapshot.getData();
+                                    ModelItem item = snapshot.toObject(ModelItem.class);
 
-                                    assert data != null;
+                                    assert item != null;
 
-                                    cart.put(snapshot.getId(), data);
+                                    // put extra data
+                                    item.setUid(snapshot.getId());
+
+                                    cart.put(snapshot.getId(), item);
                                 }
 
-                                Toast.makeText(OrderDetailActivity.this, "Total item : " + queryDocumentSnapshots.size(), Toast.LENGTH_SHORT).show();
                                 mc_adapter.notifyDataSetChanged();
+                                updateTotal(cart.values());
                             }
                         }
                     });
         }
+    }
+
+    private void updateTotal(Collection<ModelItem> cart){
+
+        md_total = 0.0;
+
+        for (ModelItem item : cart){
+            int quantity = item.getQuantity().intValue();
+            double price = item.getPrice();
+            md_total += (quantity * price);
+        }
+
+        mv_finalize.setText("Finalize( "+ NumberFormat.getCurrencyInstance().format(md_total) +" )");
     }
 
     private void finalizeCart() {
