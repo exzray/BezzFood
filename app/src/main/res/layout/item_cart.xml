@@ -2,58 +2,59 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/label_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Meatball Bolognese"
-        android:textColor="@color/black"
-        android:textSize="18sp" />
-
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/label_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Meatball Bolognese"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/label_price"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="1"
             android:text="RM 10"
             android:textColor="@color/black" />
+    </LinearLayout>
 
-        <LinearLayout
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/button_minus"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="32dp"
+            android:layout_height="40dp"
+            android:text="-" />
+
+        <TextView
+            android:id="@+id/label_quantity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="10"
+            android:textColor="@color/black" />
 
-            <Button
-                android:id="@+id/button_minus"
-                style="@style/Base.Widget.AppCompat.Button.Borderless"
-                android:layout_width="32dp"
-                android:layout_height="40dp"
-                android:text="-" />
-
-            <TextView
-                android:id="@+id/label_quantity"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:text="10"
-                android:textColor="@color/black" />
-
-            <Button
-                android:id="@+id/button_plus"
-                style="@style/Base.Widget.AppCompat.Button.Borderless"
-                android:layout_width="32dp"
-                android:layout_height="40dp"
-                android:text="+" />
-        </LinearLayout>
+        <Button
+            android:id="@+id/button_plus"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_width="32dp"
+            android:layout_height="40dp"
+            android:text="+" />
     </LinearLayout>
 </LinearLayout>
