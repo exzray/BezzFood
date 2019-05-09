@@ -180,6 +180,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
             String restaurant_uid = md_uid;
 
             Map<String, String> data = new HashMap<>();
+            data.put("rider", "");
             data.put("user", user_uid);
             data.put("restaurant", restaurant_uid);
 
