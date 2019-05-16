@@ -179,9 +179,10 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
             String user_uid = user.getUid();
             String restaurant_uid = md_uid;
 
-            Map<String, String> data = new HashMap<>();
+            Map<String, Object> data = new HashMap<>();
             data.put("rider", "");
             data.put("user", user_uid);
+            data.put("status", 0);
             data.put("restaurant", restaurant_uid);
 
             fb_firestore
