@@ -40,6 +40,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
     private String md_uid;
     private Double md_total;
     private Map<String, ModelItem> cart;
+    private Map<String, Integer> md_item;
 
     private LinearLayoutManager mc_manager;
     private DividerItemDecoration mc_divider;
@@ -61,6 +62,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
         md_uid = getIntent().getStringExtra(Data.FIRESTORE_KEY_RESTAURANTS);
 
         cart = new HashMap<>();
+        md_item = new HashMap<>();
 
         mc_manager = new LinearLayoutManager(this);
         mc_divider = new DividerItemDecoration(this, mc_manager.getOrientation());
@@ -135,6 +137,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
                             if (queryDocumentSnapshots != null) {
 
                                 cart.clear();
+                                md_item.clear();
 
                                 for (DocumentSnapshot snapshot : queryDocumentSnapshots) {
                                     ModelItem item = snapshot.toObject(ModelItem.class);
@@ -145,6 +148,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
                                     item.setUid(snapshot.getId());
 
                                     cart.put(snapshot.getId(), item);
+                                    md_item.put(item.getName(), item.getQuantity().intValue());
                                 }
 
                                 mc_adapter.notifyDataSetChanged();
@@ -184,6 +188,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
             data.put("user", user_uid);
             data.put("status", 0);
             data.put("restaurant", restaurant_uid);
+            data.put("item", md_item);
 
             fb_firestore
                     .collection(Data.FIRESTORE_KEY_ORDERS)
