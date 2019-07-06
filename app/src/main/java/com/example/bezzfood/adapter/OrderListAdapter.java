@@ -97,13 +97,13 @@ public class OrderListAdapter extends RecyclerView.Adapter<OrderListAdapter.VH> 
 
             switch (status){
                 case 0:
-                    str += "pending";
+                    str += "Pending";
                     break;
                 case 1:
-                    str += "Proccess";
+                    str += "On the way";
                     break;
                 case 2:
-                    str += "Waiting";
+                    str += "Arrived";
                     break;
                 case 3:
                     str += "Completed";

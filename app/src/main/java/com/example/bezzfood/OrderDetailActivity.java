@@ -207,7 +207,6 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
                                     .document(md_uid)
                                     .delete();
 
-
                             onBackPressed();
                             finish();
                         }
