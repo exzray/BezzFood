@@ -127,11 +127,13 @@ public class MainActivity extends AppCompatActivity
 
                 assert fb_user != null;
 
-                Intent intent = new Intent(this, ProfileActivity.class);
-                intent.putExtra(Data.EXTRA_PROFILE_USER, fb_user.getUid());
-                startActivity(intent);
+                Intent intent1 = new Intent(this, ProfileActivity.class);
+                intent1.putExtra(Data.EXTRA_PROFILE_USER, fb_user.getUid());
+                startActivity(intent1);
                 break;
             case R.id.nav_order:
+                Intent intent2 = new Intent(this, OrderListActivity.class);
+                startActivity(intent2);
                 break;
             case R.id.nav_logout:
                 fb_auth.signOut();

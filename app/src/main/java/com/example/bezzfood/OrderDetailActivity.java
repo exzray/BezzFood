@@ -28,6 +28,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.NumberFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -189,6 +190,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
             data.put("status", 0);
             data.put("restaurant", restaurant_uid);
             data.put("item", md_item);
+            data.put("date_order", new Date());
 
             fb_firestore
                     .collection(Data.FIRESTORE_KEY_ORDERS)
