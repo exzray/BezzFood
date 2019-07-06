@@ -181,7 +181,7 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
         FirebaseUser user = fb_auth.getCurrentUser();
 
         if (user != null){
-            String user_uid = user.getUid();
+            final String user_uid = user.getUid();
             String restaurant_uid = md_uid;
 
             Map<String, Object> data = new HashMap<>();
@@ -199,6 +199,15 @@ public class OrderDetailActivity extends AppCompatActivity implements ProSwipeBu
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
                             Toast.makeText(OrderDetailActivity.this, "Please wait, while we prepare your order!", Toast.LENGTH_SHORT).show();
+
+                            fb_firestore
+                                    .collection("users")
+                                    .document(user_uid)
+                                    .collection("orders")
+                                    .document(md_uid)
+                                    .delete();
+
+
                             onBackPressed();
                             finish();
                         }
